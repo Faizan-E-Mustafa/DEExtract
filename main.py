@@ -32,60 +32,41 @@ class VocabExtractor:
         return separable
 
     def extract_verbs(self, sentence):
+        verbs_found = []
         for token in sentence:
+            v_found = ''
             if token.pos_ != "VERB":
                 continue
 
             # check infinitive form
             if token.tag_ == "VVINF":
-                verb_found = token.text
-                return verb_found
+                v_found = token.text
+                verbs_found.append(v_found)
+                continue
 
-            verb_found = self.check_reflexive_verb(token)
-            if verb_found:
-                return verb_found
+            v_found = self.check_reflexive_verb(token)
+            if v_found:
+                verbs_found.append(v_found)
+                continue
 
-            verb_found = self.check_separable_verb(token)
-            if verb_found:
-                return verb_found
+            v_found = self.check_separable_verb(token)
+            if v_found:
+                verbs_found.append(v_found)
+                continue
 
             #  conjugated: should not be placed before reflexive and separable
             if token.tag_ in ["VVIZU", "VVPP", "VVFIN"]:
-                verb_found = token.lemma_
-                return verb_found
-
+                v_found = token.lemma_
+                verbs_found.append(v_found)
+        return verbs_found
 
 
 nlp = spacy.load("de_core_news_sm")
-doc = nlp(
-    "Ich hoffe, dass ich rechtzeitig anzukommen werde, um den Anfang der Konferenz nicht zu verpassen"
-)
+doc = nlp("Berlin ist eine der aufregendsten Städte Europas. Die Hauptstadt Deutschlands bietet eine unvergleichliche Kultur, Geschichte und Architektur. Besucher können durch das Brandenburger Tor spazieren, die Berliner Mauer besichtigen und das berühmte Museuminsel besuchen, um einige der bedeutendsten Kunstwerke der Welt zu sehen. Darüber hinaus gibt es viele Parks, Restaurants und Einkaufsmöglichkeiten für jeden Geschmack. Die Stadt ist bekannt für ihre vielfältige Kunstszene und Nachtleben, das immer pulsierend ist. Berlin ist ein unvergessliches Reiseziel für jeden, der Kultur, Geschichte und Abenteuer erleben möchte.")
 
-doc = nlp("Sie hat sich gestern Abend ausgespannt")
-
-{   "KOKOM":"comparative conjunction",
-    "KON": "coordinate conjunction",
-    "KOUI": 'subordinate conjunction with "zu" and infinitive',
-    "KOUS": "subordinate conjunction with sentence"}
-
-clauses = []
-for sent in doc.sents:
-    clause_start_idx = 0
-    for clause_end_idx, token in enumerate(sent):
-       
-        if token.tag_ in ["KOKOM", "KON", "KOUI", "KOUS"]:
-            
-            clauses.append(sent[clause_start_idx:clause_end_idx])
-            clause_start_idx = clause_end_idx
-
-    clauses.append(sent[clause_start_idx:])
-
-    
+# doc = nlp("Sie hat sich gestern Abend ausgespannt")
 
 vocab_ext = VocabExtractor()
 
-for clause in clauses:
-    print(clause)
-    
-    print(vocab_ext.extract_verbs(clause))
-
+for sentence in doc.sents:
+    print(vocab_ext.extract_verbs(sentence))
