@@ -2,7 +2,10 @@ import streamlit as st
 import spacy
 import pandas as pd
 
-from main import VocabExtractor
+from vocab_extract import VocabExtractor
+from vocab_extract import get_meaning_and_example_sentence
+
+st.set_page_config(layout="wide")
 
 nlp = spacy.load("de_core_news_sm")
 vocab_ext = VocabExtractor()
@@ -26,9 +29,20 @@ if query != "":
     extractions = []
     for sentence in doc.sents:
         extractions.extend(vocab_ext.extract_verbs(sentence))
-    df = pd.DataFrame({"VERBS": extractions})
+    df_temp = pd.DataFrame({"VERBS": extractions})
+    # import pdb; pdb.set_trace()
 
-    st.dataframe(df)
+    df_temp["ARTIFACT"] = df_temp["VERBS"].apply(
+        lambda x: get_meaning_and_example_sentence(x)
+    )
+    df = pd.DataFrame(
+        df_temp["ARTIFACT"].tolist(),
+        index=df_temp.index,
+        columns=["Meaning", "Example DE", "Example EN"],
+    )
+    df.insert(loc=0, column="VERBS", value=df_temp["VERBS"])
+
+    st.dataframe(df, use_container_width=True)
 
     csv = convert_df(df)
 
