@@ -22,7 +22,11 @@ st.write(
 """
 )
 
-query = st.text_input("Enter Text!", "")
+query = st.text_area("Enter Text Here!", 
+"""Ich habe heute Morgen lange überlegt, ob ich mich für den neuen Kurs anmelden soll oder nicht.
+Letztendlich habe ich mich entschieden, mich anzumelden, weil ich meine Deutschkenntnisse verbessern möchte.
+""",
+)
 
 if query != "":
     doc = nlp(query)
@@ -33,7 +37,7 @@ if query != "":
     # import pdb; pdb.set_trace()
 
     df_temp["ARTIFACT"] = df_temp["VERBS"].apply(
-        lambda x: get_meaning_and_example_sentence(x)
+        lambda x: get_meaning_and_example_sentence(x) 
     )
     df = pd.DataFrame(
         df_temp["ARTIFACT"].tolist(),
