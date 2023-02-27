@@ -22,9 +22,10 @@ streamlit run lang_app.py
 
 ## TODO
 
+- [x] Connect with dictionary to fetch sentence examples
+- [x] All words are not important. select less frequent words only.
 - [ ] Add dative reflexive verbs
 - [ ] Add nouns
-- [ ] Add adjectives
-- [x] Connect with dictionary to fetch sentence examples
+- [x] Add adjectives
 - [ ] Select a word meaning according to the context of the paragraph that user entered 
 - [ ] Select the sentence according to the word translation selected 

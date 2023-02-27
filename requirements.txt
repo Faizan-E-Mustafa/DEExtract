@@ -41,10 +41,14 @@ cymem==2.0.7
     #   preshed
     #   spacy
     #   thinc
+de-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/de_core_news_sm-3.5.0/de_core_news_sm-3.5.0-py3-none-any.whl
+    # via -r requirements.in
 decorator==5.1.1
     # via validators
 entrypoints==0.4
     # via altair
+ftfy==6.1.1
+    # via wordfreq
 gitdb==4.0.10
     # via gitpython
 gitpython==3.1.31
@@ -61,7 +65,9 @@ jinja2==3.1.2
 jsonschema==4.17.3
     # via altair
 langcodes==3.3.0
-    # via spacy
+    # via
+    #   spacy
+    #   wordfreq
 lxml==4.9.2
     # via reverso-api
 markdown-it-py==2.2.0
@@ -70,6 +76,8 @@ markupsafe==2.1.2
     # via jinja2
 mdurl==0.1.2
     # via markdown-it-py
+msgpack==1.0.4
+    # via wordfreq
 murmurhash==1.0.9
     # via
     #   preshed
@@ -128,6 +136,8 @@ pytz==2022.7.1
     # via pandas
 pytz-deprecation-shim==0.1.0.post0
     # via tzlocal
+regex==2022.10.31
+    # via wordfreq
 requests==2.28.2
     # via
     #   reverso-api
@@ -150,7 +160,9 @@ smmap==5.0.0
 soupsieve==2.4
     # via beautifulsoup4
 spacy==3.5.0
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   de-core-news-sm
 spacy-legacy==3.0.12
     # via spacy
 spacy-loggers==1.0.4
@@ -196,6 +208,10 @@ wasabi==1.1.1
     #   thinc
 watchdog==2.3.0
     # via streamlit
+wcwidth==0.2.6
+    # via ftfy
+wordfreq==3.0.3
+    # via -r requirements.in
 zipp==3.15.0
     # via importlib-metadata
 

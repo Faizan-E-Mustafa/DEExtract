@@ -1,5 +1,7 @@
 #  tags explanation:  https://www.sketchengine.eu/german-stts-part-of-speech-tagset/
 import spacy
+from wordfreq import zipf_frequency
+from reverso_api.context import ReversoContextAPI
 
 
 class VocabExtractor:
@@ -31,34 +33,59 @@ class VocabExtractor:
                     separable = child.text + token.text
         return separable
 
-    def extract_verbs(self, sentence):
-        verbs_found = []
+    def extract_vocab(self, sentence):
+        vocab_found = []
         for token in sentence:
-            v_found = ""
+            
+            # check adjective
+            if token.pos_ == "ADJ":
+                vocab_found.append(token.lemma_)
+                continue
+
+            # continue if not verb
             if token.pos_ != "VERB":
                 continue
 
             # check infinitive form
             if token.tag_ == "VVINF":
                 v_found = token.text
-                verbs_found.append(v_found)
+                vocab_found.append(v_found)
                 continue
 
             v_found = self.check_reflexive_verb(token)
             if v_found:
-                verbs_found.append(v_found)
+                vocab_found.append(v_found)
                 continue
 
             v_found = self.check_separable_verb(token)
             if v_found:
-                verbs_found.append(v_found)
+                vocab_found.append(v_found)
                 continue
 
             #  conjugated: should not be placed before reflexive and separable
             if token.tag_ in ["VVIZU", "VVPP", "VVFIN"]:
                 v_found = token.lemma_
-                verbs_found.append(v_found)
-        return verbs_found
+                vocab_found.append(v_found)
+        return vocab_found
+
+    def check_token_status(self, token, token_status_threhold):
+    
+        token_text = token
+        token_freq = zipf_frequency(token_text, 'de', wordlist='best') # [1, 8]
+
+        if token_freq == 0:
+            token_status = "not_found"
+        elif token_freq > token_status_threhold: # easy word
+            token_status = "easy"
+        else:
+            token_status = "hard"
+
+        return token_status
+
+
+
+
+  
 
 
 def get_meaning_and_example_sentence(word):
@@ -92,21 +119,26 @@ def get_meaning_and_example_sentence(word):
 # print(translate.translate("Hello", "German", "English"))
 # print(translate.example("Hello", "German", "English"))
 
-from reverso_api.context import ReversoContextAPI
+
 
 if __name__ == "__main__":
+    
     # Extract vocab
     text = "Berlin ist eine der aufregendsten Städte Europas. Die Hauptstadt Deutschlands bietet eine unvergleichliche Kultur, Geschichte und Architektur. Besucher können durch das Brandenburger Tor spazieren, die Berliner Mauer besichtigen und das berühmte Museuminsel besuchen, um einige der bedeutendsten Kunstwerke der Welt zu sehen. Darüber hinaus gibt es viele Parks, Restaurants und Einkaufsmöglichkeiten für jeden Geschmack. Die Stadt ist bekannt für ihre vielfältige Kunstszene und Nachtleben, das immer pulsierend ist. Berlin ist ein unvergessliches Reiseziel für jeden, der Kultur, Geschichte und Abenteuer erleben möchte."
     nlp = spacy.load("de_core_news_sm")
     doc = nlp(text)
 
+    
+    import pdb; pdb.set_trace()
+
     vocab_ext = VocabExtractor()
 
-    extracted_vocab = []
+    extracted_vocab = [] 
     for sentence in doc.sents:
-        extracted_vocab.extend(vocab_ext.extract_verbs(sentence))
+        extracted_vocab.extend(vocab_ext.extract_vocab(sentence))
 
     print(extracted_vocab)
+    
     for extracted_word in extracted_vocab:
 
         api = ReversoContextAPI(
