@@ -19,17 +19,30 @@ def convert_df(df):
 
 st.write(
     """
-# Vocab Extractor
+# German Vocabulary Extractor
 """
 )
 
-query = st.text_area("Enter Text Here!", 
-"""Ich habe heute Morgen lange überlegt, ob ich mich für den neuen Kurs anmelden soll oder nicht.
-Letztendlich habe ich mich entschieden, mich anzumelden, weil ich meine Deutschkenntnisse verbessern möchte.
-""",
-)
+with st.sidebar:
+    TOKEN_STATUS_THRESHOLD = st.slider(label='Select threshold', min_value=1, max_value=8, key=2, value=5)
 
-if query != "":
+with st.form(key='my_form'):
+
+	
+    query = st.text_area("Enter Text Here!",
+    """Ich habe heute Morgen lange überlegt, ob ich mich für den neuen Kurs anmelden soll oder nicht.
+Letztendlich habe ich mich entschieden, mich anzumelden, weil ich meine Deutschkenntnisse verbessern möchte.
+""" )  
+    submit_button = st.form_submit_button(label='Submit')
+
+# import pdb; pdb.set_trace()
+if submit_button and query:
+    placeholder = st.empty()
+    
+    with placeholder.container():
+        st.write("Processing .........")
+    
+   
     doc = nlp(query)
     extractions = []
     for sentence in doc.sents:
@@ -64,10 +77,12 @@ if query != "":
     )
     df.insert(loc=0, column="WORDS", value=df_temp["WORDS"])
 
+    placeholder.empty() 
+
     st.dataframe(df, use_container_width=True)
 
     csv = convert_df(df)
-
+    
     st.download_button(
         "Press to Download", csv, "file.csv", "text/csv", key="download-csv"
     )
