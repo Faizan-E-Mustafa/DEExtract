@@ -38,9 +38,9 @@ class VocabExtractor:
         for token in sentence:
             
             # check adjective
-            if token.pos_ == "ADJ":
-                vocab_found.append(token.lemma_)
-                continue
+            # if token.pos_ == "ADJ":
+            #     vocab_found.append(token.lemma_)
+            #     continue
 
             # continue if not verb
             if token.pos_ != "VERB":

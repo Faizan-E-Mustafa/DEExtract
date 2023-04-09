@@ -1,5 +1,7 @@
 # Data
 data/
+t5-base/
+t5-base-b1/
 
 # Random
 .azure/
