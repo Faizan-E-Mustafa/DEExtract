@@ -59,9 +59,9 @@ with st.sidebar:
     )
     TOKEN_STATUS_THRESHOLD = st.slider(
         label="Frequency Threshold",
-        min_value=2.,
+        min_value=3.,
         max_value=6.,
-        step = 0.5,
+        # step = 0.2,
         key=1,
         value=5.,
         help="Words having frequecy greater than the threshold will be ignored because they are easy and frequent. Set max threshold to include all possible words. ",
@@ -72,30 +72,36 @@ with st.sidebar:
     ### Synthetic Text Retriever
     """
     )
-    LANG_LEVEL = st.selectbox("CEFR Level", ("B1", "C2"))
+    LANG_LEVEL = st.selectbox("Readability Level", ("Intermediate", "Advanced"))
     LANG_LEVEL = LANG_LEVEL.lower()
 
     topic_selected = st.selectbox("Select Topic", ("Politik", "Wirtschaft"))
 
-    st.write(
-        """
-    ### T5 Model parameters
-    """
-    )
+    # st.write(
+    #     """
+    # ### T5 Model parameters
+    # """
+    # )
 
-    TEMPERATURE = st.slider(
-        label="Temperature", min_value=0.0, max_value=1.0, key=2, value=1.0
-    )
+    # TEMPERATURE = st.slider(
+    #     label="Temperature", min_value=0.0, max_value=1.0, key=2, value=1.0
+    # )
 
-    TOPK = st.slider(label="Top K", min_value=0, max_value=10, key=3, value=3)
+    # TOPK = st.slider(label="Top K", min_value=0, max_value=10, key=3, value=3)
 
-
+# Die Branche hat sich in den letzten Jahren rapide entwickelt.
 with st.form(key="my_form"):
     query = st.text_area(
         "Enter Text Here!",
-        """Ich habe heute Morgen lange überlegt, ob ich mich für den neuen Kurs anmelden soll oder nicht.
-Letztendlich habe ich mich entschieden, mich anzumelden, weil ich meine Deutschkenntnisse verbessern möchte.
+        """Ich werde heute ein neues Auto kaufen.
+Ich fahre mit dem Zug nach Islamabad.
+Der Zug fährt pünktlich um vier Uhr ab.
+Paare lernen gewöhnlich ihre Unterschiede anzunehmen. 
+Ich habe ein schönes Restaurant entdeckt.
+Das Hotel befindet sich an einem kleinen See.
+Ich muss mich anstrengen, um die gesamte Arbeit rechtzeitig zu erledigen.
 """,
+height = 140
     )
     submit_button = st.form_submit_button(label="Submit")
 
@@ -160,7 +166,7 @@ col1, col2 = st.columns((2, 2))
 with col1:
     with st.form(key="vocab_form"):
         vocab_list = st.text_area(
-            "Enter Text Here!",
+            "Enter Verbs Here!",
             """kommen\nbeginnen\nverdienen\nbekommen
     """,
         )
@@ -174,7 +180,7 @@ if vocab_submit_button and vocab_list:
     vocab_list = [i.lower().strip() for i in vocab_list.split("\n")]
 
     inverted_index = load_inverted_index(
-        config.DATA_ROOT / f"inverted_index_{topic_selected}_{LANG_LEVEL}.json"
+        config.DATA_ROOT / f"inverted_index_{topic_selected}_{'b1' if LANG_LEVEL=='intermediate' else 'c1'}.json"
     )
 
     doc_importance = inv_index.index_lookup(
@@ -182,7 +188,7 @@ if vocab_submit_button and vocab_list:
     )
 
     dataset_topic = load_topic_dataset(
-        config.DATA_ROOT / f"dataset_{topic_selected}_{LANG_LEVEL}.json"
+        config.DATA_ROOT / f"dataset_{topic_selected}_{'b1' if LANG_LEVEL=='intermediate' else 'c1'}.json"
     )
 
     for doc_id, score in doc_importance:
@@ -237,19 +243,19 @@ def gen(sample, top_k, temperature=1):
     return tokenizer.decode(outputs[0], skip_special_tokens=True)
 
 
-if vocab_submit_button and vocab_list:
-    st.write(
-        """
-    ### T5 Generated Text 
-    """
-    )
-    # vocab_list = [i.lower().strip() for i in vocab_list.split("\n")]
-    model, tokenizer = load_model()
+# if vocab_submit_button and vocab_list:
+#     st.write(
+#         """
+#     ### T5 Generated Text 
+#     """
+#     )
+#     # vocab_list = [i.lower().strip() for i in vocab_list.split("\n")]
+#     model, tokenizer = load_model()
 
-    unique_vocab_str = " ".join(
-        [f"{e} <extra_id_{i+1}>" for i, e in enumerate(vocab_list)]
-    )
-    document = topic_selected + " <extra_id_0> " + unique_vocab_str
+#     unique_vocab_str = " ".join(
+#         [f"{e} <extra_id_{i+1}>" for i, e in enumerate(vocab_list)]
+#     )
+#     document = topic_selected + " <extra_id_0> " + unique_vocab_str
 
-    result = gen(document, top_k=TOPK, temperature=TEMPERATURE)
-    st.write(result)
+#     result = gen(document, top_k=TOPK, temperature=TEMPERATURE)
+#     st.write(result)

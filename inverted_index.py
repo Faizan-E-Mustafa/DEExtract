@@ -113,7 +113,7 @@ class InvertedIndex:
 
 
 if __name__ == "__main__":
-    lang_level = "c2"
+    lang_level = "b1"
 
     inv_index = InvertedIndex()
     complete_dataset = inv_index.load_dataset(

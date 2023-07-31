@@ -15,6 +15,7 @@ class VocabExtractor:
             "VVIZU",  #  Infinitiv mit "zu"e.g anzukommen
             "VVPP",  # past participle of full verb e.g gekommt
             "VVFIN",  # conjugated
+            "VVINF" # infinitive sich anmelden, sich enscheiden
         ]:
             for child in token.children:
                 if child.tag_ == "PRF":
@@ -24,13 +25,13 @@ class VocabExtractor:
 
     def check_separable_verb(self, token):
         separable = ""
-
+        # import pdb; pdb.set_trace()
         if token.tag_ in ["VVFIN"]:  # conjugated
             for child in token.children:
                 if (
                     child.pos_ == "ADP" and child.tag_ == "PTKVZ"
                 ):  # separable verb conjugated
-                    separable = child.text + token.text
+                    separable = child.text + token.lemma_
         return separable
 
     def extract_vocab(self, sentence):
@@ -46,19 +47,33 @@ class VocabExtractor:
             if token.pos_ != "VERB":
                 continue
 
+            
+
+            v_found_reflexive = self.check_reflexive_verb(token)
+            
+            
+        
+
+            v_found_separable = self.check_separable_verb(token)
+            # import pdb; pdb.set_trace()
+            
+            if v_found_reflexive and v_found_separable:
+                # import pdb; pdb.set_trace()
+                vocab_found.append(f"sich {v_found_separable}")
+                continue
+            
+            elif v_found_reflexive:
+                v_found_reflexive.split()[-1]
+                vocab_found.append(v_found_reflexive)
+                continue
+            elif v_found_separable:
+                # import pdb; pdb.set_trace()
+                vocab_found.append(v_found_separable)
+                continue
+            
             # check infinitive form
-            if token.tag_ == "VVINF":
+            if not v_found_reflexive and token.tag_ == "VVINF":
                 v_found = token.text
-                vocab_found.append(v_found)
-                continue
-
-            v_found = self.check_reflexive_verb(token)
-            if v_found:
-                vocab_found.append(v_found)
-                continue
-
-            v_found = self.check_separable_verb(token)
-            if v_found:
                 vocab_found.append(v_found)
                 continue
 
@@ -124,12 +139,25 @@ def get_meaning_and_example_sentence(word):
 if __name__ == "__main__":
     
     # Extract vocab
-    text = "Berlin ist eine der aufregendsten Städte Europas. Die Hauptstadt Deutschlands bietet eine unvergleichliche Kultur, Geschichte und Architektur. Besucher können durch das Brandenburger Tor spazieren, die Berliner Mauer besichtigen und das berühmte Museuminsel besuchen, um einige der bedeutendsten Kunstwerke der Welt zu sehen. Darüber hinaus gibt es viele Parks, Restaurants und Einkaufsmöglichkeiten für jeden Geschmack. Die Stadt ist bekannt für ihre vielfältige Kunstszene und Nachtleben, das immer pulsierend ist. Berlin ist ein unvergessliches Reiseziel für jeden, der Kultur, Geschichte und Abenteuer erleben möchte."
+    text = "Ich werde heute ein neues Auto kaufen"
+    
+    # text = "Der Zug fährt pünktlich um vier Uhr ab."
+
+    # text = "Das Hotel befindet sich an einem kleinen See."
+    # text = "Die Branche hat sich in den letzten Jahren rapide entwickelt."
+
+    # # text = "Ich habe mich zu einem Sprachkurs angemeldet."
+
+    
+
+    # text = "Ich muss mich anstrengen, um die gesamte Arbeit rechtzeitig zu erledigen."
+    
+
+    # text = "Berlin ist eine der aufregendsten Städte Europas. Die Hauptstadt Deutschlands bietet eine unvergleichliche Kultur, Geschichte und Architektur. Besucher können durch das Brandenburger Tor spazieren, die Berliner Mauer besichtigen und das berühmte Museuminsel besuchen, um einige der bedeutendsten Kunstwerke der Welt zu sehen. Darüber hinaus gibt es viele Parks, Restaurants und Einkaufsmöglichkeiten für jeden Geschmack. Die Stadt ist bekannt für ihre vielfältige Kunstszene und Nachtleben, das immer pulsierend ist. Berlin ist ein unvergessliches Reiseziel für jeden, der Kultur, Geschichte und Abenteuer erleben möchte."
     nlp = spacy.load("de_core_news_sm")
     doc = nlp(text)
 
-    
-    import pdb; pdb.set_trace()
+
 
     vocab_ext = VocabExtractor()
 
@@ -138,6 +166,7 @@ if __name__ == "__main__":
         extracted_vocab.extend(vocab_ext.extract_vocab(sentence))
 
     print(extracted_vocab)
+    import pdb; pdb.set_trace()
     
     for extracted_word in extracted_vocab:
 
