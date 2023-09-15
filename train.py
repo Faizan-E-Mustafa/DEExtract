@@ -59,21 +59,19 @@ We will use the [🤗 Datasets](https://github.com/huggingface/datasets) library
 """
 
 
-
-
-
 from datasets import load_dataset, load_metric
 
 import os
 import config
+
 # data_dir = os.path.abspath(os.getcwd())
-data_dir = str(config.DATA_ROOT) 
+data_dir = str(config.DATA_ROOT)
 # import pdb; pdb.set_trace()
 data_files = {"train": "train.json", "test": "test.json"}
 raw_datasets = load_dataset(
-            
-            data_dir, data_files=data_files,
-        )
+    data_dir,
+    data_files=data_files,
+)
 
 #######################################################################
 metric = load_metric("rouge")
@@ -89,22 +87,27 @@ To get a sense of what the data looks like, the following function will show som
 import datasets
 import random
 import pandas as pd
+
 # from IPython.display import display, HTML
 
+
 def show_random_elements(dataset, num_examples=5):
-    assert num_examples <= len(dataset), "Can't pick more elements than there are in the dataset."
+    assert num_examples <= len(
+        dataset
+    ), "Can't pick more elements than there are in the dataset."
     picks = []
     for _ in range(num_examples):
-        pick = random.randint(0, len(dataset)-1)
+        pick = random.randint(0, len(dataset) - 1)
         while pick in picks:
-            pick = random.randint(0, len(dataset)-1)
+            pick = random.randint(0, len(dataset) - 1)
         picks.append(pick)
-    
+
     df = pd.DataFrame(dataset[picks])
     for column, typ in dataset.features.items():
         if isinstance(typ, datasets.ClassLabel):
             df[column] = df[column].transform(lambda i: typ.names[i])
     display(HTML(df.to_html()))
+
 
 # show_random_elements(raw_datasets["train"])
 
@@ -131,7 +134,7 @@ That vocabulary will be cached, so it's not downloaded again the next time we ru
 """
 
 from transformers import AutoTokenizer
-    
+
 tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 
 """By default, the call above will use one of the fast tokenizers (backed by Rust) from the 🤗 Tokenizers library.
@@ -139,7 +142,11 @@ tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 You can directly call this tokenizer on one sentence or a pair of sentences:
 """
 
-print(tokenizer("politik <extra_id_0> sich stellen <extra_id_1> scheinen <extra_id_2> stimmen <extra_id_3>"))
+print(
+    tokenizer(
+        "politik <extra_id_0> sich stellen <extra_id_1> scheinen <extra_id_2> stimmen <extra_id_3>"
+    )
+)
 
 """Depending on the model you selected, you will see different keys in the dictionary returned by the cell above. They don't matter much for what we're doing here (just know they are required by the model we will instantiate later), you can learn more about them in [this tutorial](https://huggingface.co/transformers/preprocessing.html) if you're interested.
 
@@ -151,8 +158,14 @@ Instead of one sentence, we can pass along a list of sentences:
 """To prepare the targets for our model, we need to tokenize them inside the `as_target_tokenizer` context manager. This will make sure the tokenizer uses the special tokens corresponding to the targets:"""
 
 with tokenizer.as_target_tokenizer():
-    print(tokenizer(["wirtschaft <extra_id_0> steigen <extra_id_1> machen <extra_id_2> sagen <extra_id_3> Die Verbraucherpreise stiegen im M\u00e4rz weiter stark um 5,4 Prozent im Vergleich zum Vorjahreszeitraum. Die Erzeugerpreise legten im vergangenen Monat sogar um 7,3 Prozent zu. \"Die nationale Wirtschaft hat einen guten Start mit best\u00e4ndigem und relativ schnellem Wachstum gemacht\", sagte ein Sprecher des Statistikamts in Peking. Die chinesische Wirtschaft wuchs im vergangenen Jahr sogar noch um 10,3 Prozent, doch will die Regierung das Wachstum wegen der hohen Inflation und der Immobilienblase bremsen. <extra_id_4>"]))
-    
+    print(
+        tokenizer(
+            [
+                'wirtschaft <extra_id_0> steigen <extra_id_1> machen <extra_id_2> sagen <extra_id_3> Die Verbraucherpreise stiegen im M\u00e4rz weiter stark um 5,4 Prozent im Vergleich zum Vorjahreszeitraum. Die Erzeugerpreise legten im vergangenen Monat sogar um 7,3 Prozent zu. "Die nationale Wirtschaft hat einen guten Start mit best\u00e4ndigem und relativ schnellem Wachstum gemacht", sagte ein Sprecher des Statistikamts in Peking. Die chinesische Wirtschaft wuchs im vergangenen Jahr sogar noch um 10,3 Prozent, doch will die Regierung das Wachstum wegen der hohen Inflation und der Immobilienblase bremsen. <extra_id_4>'
+            ]
+        )
+    )
+
 # import pdb; pdb.set_trace()
 """If you are using one of the five T5 checkpoints we have to prefix the inputs with "summarize:" (the model can also translate and it needs the prefix to know which task it has to perform)."""
 
@@ -166,20 +179,24 @@ else:
 max_input_length = 56
 max_target_length = 256
 
+
 def preprocess_function(examples):
     inputs = [prefix + doc for doc in examples["document"]]
     model_inputs = tokenizer(inputs, max_length=max_input_length, truncation=True)
 
     # Setup the tokenizer for targets
     with tokenizer.as_target_tokenizer():
-        labels = tokenizer(examples["summary"], max_length=max_target_length, truncation=True)
+        labels = tokenizer(
+            examples["summary"], max_length=max_target_length, truncation=True
+        )
 
     model_inputs["labels"] = labels["input_ids"]
     return model_inputs
 
+
 """This function works with one or several examples. In the case of several examples, the tokenizer will return a list of lists for each key:"""
 
-preprocess_function(raw_datasets['train'][:2])
+preprocess_function(raw_datasets["train"][:2])
 
 """To apply this function on all the pairs of sentences in our dataset, we just use the `map` method of our `dataset` object we created earlier. This will apply the function on all the elements of all the splits in `dataset`, so our training, validation and testing data will be preprocessed in one single command."""
 
@@ -194,7 +211,12 @@ Note that we passed `batched=True` to encode the texts by batches together. This
 Now that our data is ready, we can download the pretrained model and fine-tune it. Since our task is of the sequence-to-sequence kind, we use the `AutoModelForSeq2SeqLM` class. Like with the tokenizer, the `from_pretrained` method will download and cache the model for us.
 """
 
-from transformers import AutoModelForSeq2SeqLM, DataCollatorForSeq2Seq, Seq2SeqTrainingArguments, Seq2SeqTrainer
+from transformers import (
+    AutoModelForSeq2SeqLM,
+    DataCollatorForSeq2Seq,
+    Seq2SeqTrainingArguments,
+    Seq2SeqTrainer,
+)
 
 model = AutoModelForSeq2SeqLM.from_pretrained(model_checkpoint)
 
@@ -208,7 +230,7 @@ model_name = model_checkpoint
 # model_name = model_checkpoint.split("/")[-1]
 args = Seq2SeqTrainingArguments(
     f"{model_name}",
-    evaluation_strategy = "epoch",
+    evaluation_strategy="epoch",
     learning_rate=2e-5,
     per_device_train_batch_size=batch_size,
     per_device_eval_batch_size=batch_size,
@@ -218,11 +240,10 @@ args = Seq2SeqTrainingArguments(
     predict_with_generate=True,
     fp16=True,
     push_to_hub=False,
-    generation_max_length = max_target_length,
-    save_strategy = "epoch",
-    load_best_model_at_end = True,
-    # output_dir = 
-
+    generation_max_length=max_target_length,
+    save_strategy="epoch",
+    load_best_model_at_end=True,
+    # output_dir =
 )
 
 """Here we set the evaluation to be done at the end of each epoch, tweak the learning rate, use the `batch_size` defined at the top of the cell and customize the weight decay. Since the `Seq2SeqTrainer` will save the model regularly and our dataset is quite large, we tell it to make three saves maximum. Lastly, we use the `predict_with_generate` option (to properly generate summaries) and activate mixed precision training (to go a bit faster).
@@ -239,26 +260,38 @@ data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
 import nltk
 import numpy as np
 
+
 def compute_metrics(eval_pred):
     predictions, labels = eval_pred
     decoded_preds = tokenizer.batch_decode(predictions, skip_special_tokens=True)
     # Replace -100 in the labels as we can't decode them.
     labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
     decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
-    
+
     # Rouge expects a newline after each sentence
-    decoded_preds = ["\n".join(nltk.sent_tokenize(pred.strip(), language='german')) for pred in decoded_preds]
-    decoded_labels = ["\n".join(nltk.sent_tokenize(label.strip(), language='german')) for label in decoded_labels]
-    
-    result = metric.compute(predictions=decoded_preds, references=decoded_labels, use_stemmer=True)
+    decoded_preds = [
+        "\n".join(nltk.sent_tokenize(pred.strip(), language="german"))
+        for pred in decoded_preds
+    ]
+    decoded_labels = [
+        "\n".join(nltk.sent_tokenize(label.strip(), language="german"))
+        for label in decoded_labels
+    ]
+
+    result = metric.compute(
+        predictions=decoded_preds, references=decoded_labels, use_stemmer=True
+    )
     # Extract a few results
     result = {key: value.mid.fmeasure * 100 for key, value in result.items()}
-    
+
     # Add mean generated length
-    prediction_lens = [np.count_nonzero(pred != tokenizer.pad_token_id) for pred in predictions]
+    prediction_lens = [
+        np.count_nonzero(pred != tokenizer.pad_token_id) for pred in predictions
+    ]
     result["gen_len"] = np.mean(prediction_lens)
-    
+
     return {k: round(v, 4) for k, v in result.items()}
+
 
 """Then we just need to pass all of this along with our datasets to the `Seq2SeqTrainer`:"""
 
@@ -269,11 +302,12 @@ trainer = Seq2SeqTrainer(
     eval_dataset=tokenized_datasets["test"],
     data_collator=data_collator,
     tokenizer=tokenizer,
-    compute_metrics=compute_metrics
+    compute_metrics=compute_metrics,
 )
 
 import nltk
-nltk.download('punkt')
+
+nltk.download("punkt")
 
 """We can now finetune our model by just calling the `train` method:"""
 
@@ -283,42 +317,58 @@ trainer.train()
 
 raw_datasets["test"]["document"][2]
 
-input_ids = tokenizer(raw_datasets["test"]["document"][2], return_tensors="pt").input_ids
-outputs = model.generate(input_ids.to(device='cuda'), do_sample=True, 
-    # max_length=100, 
-    top_k=0, 
-    temperature=1)
+input_ids = tokenizer(
+    raw_datasets["test"]["document"][2], return_tensors="pt"
+).input_ids
+outputs = model.generate(
+    input_ids.to(device="cuda"),
+    do_sample=True,
+    # max_length=100,
+    top_k=0,
+    temperature=1,
+)
 print(tokenizer.decode(outputs[0], skip_special_tokens=True))
 trainer.save_model()
-
 
 
 ##########################################
 
 from transformers import AutoModelForSeq2SeqLM
 from transformers import AutoTokenizer
-    
-tokenizer = AutoTokenizer.from_pretrained("C:/Users/femustafa/Desktop/Language_app/t5-base")
-model = AutoModelForSeq2SeqLM.from_pretrained("C:/Users/femustafa/Desktop/Language_app/t5-base")
+
+tokenizer = AutoTokenizer.from_pretrained(
+    "C:/Users/femustafa/Desktop/Language_app/t5-base"
+)
+model = AutoModelForSeq2SeqLM.from_pretrained(
+    "C:/Users/femustafa/Desktop/Language_app/t5-base"
+)
+
 
 def gen(sample, top_k):
-
     input_ids = tokenizer(sample, return_tensors="pt").input_ids
-    outputs = model.generate(input_ids.to(device='cpu'), 
-    max_new_tokens= 200,
-    do_sample=True,
-#    top_p=0.92, 
-    top_k=top_k,
-    no_repeat_ngram_size = 3,
-    # temperature=0.2,
-    # num_beams=1,
-    # num_return_sequences=3,
-      )
+    outputs = model.generate(
+        input_ids.to(device="cpu"),
+        max_new_tokens=200,
+        do_sample=True,
+        #    top_p=0.92,
+        top_k=top_k,
+        no_repeat_ngram_size=3,
+        # temperature=0.2,
+        # num_beams=1,
+        # num_return_sequences=3,
+    )
     print(tokenizer.decode(outputs[0], skip_special_tokens=True))
-import pdb; pdb.set_trace()
+
+
+import pdb
+
+pdb.set_trace()
+
+
 def temp(i, top_k):
     print(raw_datasets["test"]["document"][i])
     gen(raw_datasets["test"]["document"][i], top_k)
+
 
 for i in range(5):
     print("top 0")
@@ -326,4 +376,6 @@ for i in range(5):
     print("top 5")
     temp(i, top_k=30)
     print("===========================")
-import pdb; pdb.set_trace()
+import pdb
+
+pdb.set_trace()

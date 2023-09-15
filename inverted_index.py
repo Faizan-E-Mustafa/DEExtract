@@ -1,6 +1,6 @@
 import json
 from collections import defaultdict, Counter
-from tqdm import tqdm 
+from tqdm import tqdm
 
 import config
 
@@ -20,6 +20,7 @@ import config
 from vocab_extract import VocabExtractor
 import spacy
 
+
 class InvertedIndex:
     def __init__(
         self,
@@ -37,16 +38,15 @@ class InvertedIndex:
         topic_dataset = self.filter_by_topic(dataset, topic)
 
         nlp = spacy.load("de_core_news_sm")
-        
+
         vocab_ext = VocabExtractor()
 
         index_posting_list = defaultdict(list)
 
         for entry in tqdm(topic_dataset):
-
             # override the vocab that was used to generate the samples
             doc = nlp(entry["text"])
-            extracted_vocab = [] 
+            extracted_vocab = []
             for sentence in doc.sents:
                 extracted_vocab.extend(vocab_ext.extract_vocab(sentence))
             unique_vocab = []
@@ -63,7 +63,9 @@ class InvertedIndex:
                 index_posting_list[token].append(sample_id)
 
         with open(
-            config.DATA_ROOT / f"inverted_index_{topic}_{level}.json", "w", encoding="utf-8"
+            config.DATA_ROOT / f"inverted_index_{topic}_{level}.json",
+            "w",
+            encoding="utf-8",
         ) as f:
             json.dump(
                 index_posting_list,
@@ -76,7 +78,6 @@ class InvertedIndex:
             for i in topic_dataset:
                 json.dump(i, f)
                 f.write("\n")
-
 
     def filter_by_topic(self, gpt_dataset, topic):
         topic_dataset = []
@@ -103,13 +104,13 @@ class InvertedIndex:
         return inverted_index
 
     def index_lookup(self, exracted_vocab, inverted_index, topn_docs):
-
-        posting_lists = [v for token in exracted_vocab for v in inverted_index.get(token, [])]
+        posting_lists = [
+            v for token in exracted_vocab for v in inverted_index.get(token, [])
+        ]
         doc_importance = Counter(posting_lists).most_common(topn_docs)
         print(doc_importance)
-        
-        return doc_importance
 
+        return doc_importance
 
 
 if __name__ == "__main__":
@@ -119,15 +120,25 @@ if __name__ == "__main__":
     complete_dataset = inv_index.load_dataset(
         gpt_dataset_path=config.DATA_ROOT / f"gpt_dataset_{lang_level}.json"
     )
-    inv_index.create_inverted_index_for_topic(complete_dataset, topic="wirtschaft", level=lang_level)
-    inv_index.create_inverted_index_for_topic(complete_dataset, topic="politik", level=lang_level)
+    inv_index.create_inverted_index_for_topic(
+        complete_dataset, topic="wirtschaft", level=lang_level
+    )
+    inv_index.create_inverted_index_for_topic(
+        complete_dataset, topic="politik", level=lang_level
+    )
 
     inverted_index = inv_index.load_inverted_index(
         config.DATA_ROOT / f"inverted_index_politik_{lang_level}.json"
     )
-    doc_importance = inv_index.index_lookup(exracted_vocab=[ "finden", "unternehmen"], inverted_index=inverted_index, topn_docs= 3)
+    doc_importance = inv_index.index_lookup(
+        exracted_vocab=["finden", "unternehmen"],
+        inverted_index=inverted_index,
+        topn_docs=3,
+    )
 
-    dataset_politik = inv_index.load_dataset(config.DATA_ROOT / f"dataset_politik_{lang_level}.json")
+    dataset_politik = inv_index.load_dataset(
+        config.DATA_ROOT / f"dataset_politik_{lang_level}.json"
+    )
 
     for doc_id, score in doc_importance:
-        print(dataset_politik[doc_id-1])
+        print(dataset_politik[doc_id - 1])

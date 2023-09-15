@@ -59,11 +59,11 @@ with st.sidebar:
     )
     TOKEN_STATUS_THRESHOLD = st.slider(
         label="Frequency Threshold",
-        min_value=3.,
-        max_value=6.,
+        min_value=3.0,
+        max_value=6.0,
         # step = 0.2,
         key=1,
-        value=5.,
+        value=5.0,
         help="Words having frequecy greater than the threshold will be ignored because they are easy and frequent. Set max threshold to include all possible words. ",
     )
 
@@ -101,7 +101,7 @@ Ich habe ein schönes Restaurant entdeckt.
 Das Hotel befindet sich an einem kleinen See.
 Ich muss mich anstrengen, um die gesamte Arbeit rechtzeitig zu erledigen.
 """,
-height = 140
+        height=140,
     )
     submit_button = st.form_submit_button(label="Submit")
 
@@ -180,7 +180,8 @@ if vocab_submit_button and vocab_list:
     vocab_list = [i.lower().strip() for i in vocab_list.split("\n")]
 
     inverted_index = load_inverted_index(
-        config.DATA_ROOT / f"inverted_index_{topic_selected}_{'b1' if LANG_LEVEL=='intermediate' else 'c1'}.json"
+        config.DATA_ROOT
+        / f"inverted_index_{topic_selected}_{'b1' if LANG_LEVEL=='intermediate' else 'c1'}.json"
     )
 
     doc_importance = inv_index.index_lookup(
@@ -188,7 +189,8 @@ if vocab_submit_button and vocab_list:
     )
 
     dataset_topic = load_topic_dataset(
-        config.DATA_ROOT / f"dataset_{topic_selected}_{'b1' if LANG_LEVEL=='intermediate' else 'c1'}.json"
+        config.DATA_ROOT
+        / f"dataset_{topic_selected}_{'b1' if LANG_LEVEL=='intermediate' else 'c1'}.json"
     )
 
     for doc_id, score in doc_importance:
@@ -246,7 +248,7 @@ def gen(sample, top_k, temperature=1):
 # if vocab_submit_button and vocab_list:
 #     st.write(
 #         """
-#     ### T5 Generated Text 
+#     ### T5 Generated Text
 #     """
 #     )
 #     # vocab_list = [i.lower().strip() for i in vocab_list.split("\n")]
