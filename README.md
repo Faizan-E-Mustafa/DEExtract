@@ -1,7 +1,10 @@
 # DEExtract
 Extract german vocabulary from text and use list of verbs to generate sample texts on specific topic at a particular language proficiency level.
 
+#### Verb Extraction:
 ![website demo](dump/images/vocab_extraction_demo.PNG)
+
+#### Synthetic Text Retriver:
 ![website demo](dump/images/retriever_demo.PNG)
 
 # Package Installation
@@ -20,7 +23,7 @@ Note: The data is already uploaded. Skip to [next](#Dashboard) section to start 
 `ìnverted_index.py`: Split the `data/gpt_dataset_{cefr_level}.json` by topic also `dataset_{topic}_{cefr_level}.json` and create inverted index `inverted_index{topic}_{cefr_level}.json`
 
 ## Dashboard
-`lang_app.py`: Start the dashboard usifn the following command
+`lang_app.py`: Start the dashboard using the following command
 
 ```bash
 streamlit run lang_app.py 
@@ -43,6 +46,12 @@ Use the vocabulary and topic to create a sythetic paragraph. The model was devel
 `predict.py`: Generate the text using some input topic and list of vocabulary. 
 
 ![website demo](dump/images/t5_demo.PNG)
+
+### Dataset Terms and Conditions:
+Dataset is created using ChatGPT and further use is permitted as long the use comply with the [Terms and Conditions](https://openai.com/policies/terms-of-use) of OpenAI.
+
+### Cite
+
 
 
 
