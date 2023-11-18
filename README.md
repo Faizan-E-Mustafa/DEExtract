@@ -14,7 +14,7 @@ pip install -r requirements.txt
 ```
 
 ## Data Preparation:
-Note: The data is already uploaded. Skip to [next](#Dashboard) section to start the dashboard
+Note: The data is already uploaded in the repository. Skip to [next](#Dashboard) section to start the dashboard
 
 `dataset_prep.py`: Filter data from MLSUM dataset using topic names and use `VocabExtractor` to extract vocabulary. Further details are mentioned in 3.1 of the paper. The output is stored in `data/filtered_topics_{dataset_split_name}.json`
 
@@ -48,10 +48,14 @@ Use the vocabulary and topic to create a sythetic paragraph. The model was devel
 ![website demo](dump/images/t5_demo.PNG)
 
 ### Dataset Terms and Conditions:
+
+Processed dataset is also avaliable as [HuggingFace Dataset](https://huggingface.co/datasets/femustafa/DEExtract). 
+
 Dataset is created using ChatGPT and further use is permitted as long the use comply with the [Terms and Conditions](https://openai.com/policies/terms-of-use) of OpenAI.
 
 ### Cite
 
+To be updated
 
 
 
