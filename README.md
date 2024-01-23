@@ -1,10 +1,23 @@
-# DEExtract
-Extract german vocabulary from text and use list of verbs to generate sample texts on specific topic at a particular language proficiency level.
+# DEExtract: A Customizable Context-Based German Vocabulary Learning Tool
+
+### Abstract 
+
+```
+Second language acquisition provides a lot of benefits, including cognitive development and intercultural understanding. We developed a tool to help German language learners, who have different proficiency levels, with vocabulary acquisition in context. The tool can extract and filter a verb vocabulary list from a piece of text according to the user’s proficiency level. Since vocabulary learning is effective in context, we also provide a feature to retrieve a synthetic paragraph using the verbs entered by the user. The synthetic paragraphs are generated using Generative modeling in two different topics namely, Politics and Economy, and at two different language readability levels.
+```
+
+---
+
+Extract german vocabulary from text and 
 
 #### Verb Extraction:
+Extract german verbs from text and filter them accodrding to users proficiency level. Words having frequecy greater than the `Frequency Theshold` will be ignored because they are easy and frequent. Set max threshold to include all possible words.   
+
 ![website demo](dump/images/vocab_extraction_demo.PNG)
 
 #### Synthetic Text Retriver:
+Use a list of verbs to retrieve sample texts on specific topic (Politics or Economy) at a two proficiency levels (Intermediate or Advanced).
+ 
 ![website demo](dump/images/retriever_demo.PNG)
 
 # Package Installation
@@ -55,7 +68,18 @@ Dataset is created using ChatGPT and further use is permitted as long the use co
 
 ### Cite
 
-To be updated
+```bash
+@INPROCEEDINGS{10391702,
+  author={Mustafa, Faizan E},
+  booktitle={2023 International Conference on Innovation and Intelligence for Informatics, Computing, and Technologies (3ICT)}, 
+  title={DEExtract: A Customizable Context-Based German Vocabulary Learning Tool}, 
+  year={2023},
+  volume={},
+  number={},
+  pages={65-69},
+  doi={10.1109/3ICT60104.2023.10391702}}
+
+```
 
 
 
